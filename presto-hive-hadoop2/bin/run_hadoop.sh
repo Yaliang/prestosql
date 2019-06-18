@@ -7,9 +7,7 @@ set -euo pipefail -x
 cleanup_docker_containers
 start_docker_containers
 
-AWS_ACCESS_KEY_ID=AKIAO4GIYFKQL77QC3ZA
-AWS_SECRET_ACCESS_KEY=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
-S3_BUCKET_ENDPOINT=s3.cn-north-1.amazonaws.com.cn
+
 
 # insert AWS credentials
 exec_in_hadoop_master_container cp /etc/hadoop/conf/core-site.xml.s3-template /etc/hadoop/conf/core-site.xml
