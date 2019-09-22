@@ -24,6 +24,9 @@ import io.prestosql.plugin.hive.metastore.RecordingHiveMetastore;
 import io.prestosql.plugin.hive.metastore.WriteHiveMetastoreRecordingProcedure;
 import io.prestosql.plugin.hive.metastore.cache.CachingHiveMetastoreModule;
 import io.prestosql.plugin.hive.metastore.cache.ForCachingHiveMetastore;
+import io.prestosql.plugin.weride.hive.PooledHiveMetastoreClientConfig;
+import io.prestosql.plugin.weride.hive.PooledStaticMetastoreLocator;
+import io.prestosql.plugin.weride.hive.PooledThriftMetastoreClientFactory;
 import io.prestosql.spi.procedure.Procedure;
 
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
@@ -37,7 +40,8 @@ public class ThriftMetastoreModule
     protected void setup(Binder binder)
     {
         binder.bind(ThriftMetastoreClientFactory.class).in(Scopes.SINGLETON);
-        binder.bind(MetastoreLocator.class).to(StaticMetastoreLocator.class).in(Scopes.SINGLETON);
+        binder.bind(PooledThriftMetastoreClientFactory.class).in(Scopes.SINGLETON);
+        bindMetastoreLocator(binder);
         configBinder(binder).bindConfig(StaticMetastoreConfig.class);
         configBinder(binder).bindConfig(ThriftHiveMetastoreConfig.class);
 
@@ -68,5 +72,16 @@ public class ThriftMetastoreModule
         }
 
         binder.install(new CachingHiveMetastoreModule());
+    }
+
+    private void bindMetastoreLocator(Binder binder)
+    {
+        if (buildConfigObject(PooledHiveMetastoreClientConfig.class).getMaxTransport() > 0) {
+            binder.bind(MetastoreLocator.class).to(PooledStaticMetastoreLocator.class).in(Scopes.SINGLETON);
+            configBinder(binder).bindConfig(PooledHiveMetastoreClientConfig.class);
+        }
+        else {
+            binder.bind(MetastoreLocator.class).to(StaticMetastoreLocator.class).in(Scopes.SINGLETON);
+        }
     }
 }

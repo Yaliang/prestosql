@@ -11,9 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.prestosql.plugin.hive.metastore.thrift;
+package io.prestosql.plugin.weride.hive;
 
 import com.google.common.net.HostAndPort;
+import io.prestosql.plugin.hive.metastore.thrift.MetastoreLocator;
+import io.prestosql.plugin.hive.metastore.thrift.StaticMetastoreConfig;
+import io.prestosql.plugin.hive.metastore.thrift.StaticMetastoreLocator;
+import io.prestosql.plugin.hive.metastore.thrift.ThriftMetastoreClient;
 import org.apache.thrift.TException;
 
 import javax.inject.Inject;
@@ -28,20 +32,20 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
-public class StaticMetastoreLocator
+public class PooledStaticMetastoreLocator
         implements MetastoreLocator
 {
     private final List<HostAndPort> addresses;
-    private final ThriftMetastoreClientFactory clientFactory;
+    private final PooledThriftMetastoreClientFactory clientFactory;
     private final String metastoreUsername;
 
     @Inject
-    public StaticMetastoreLocator(StaticMetastoreConfig config, ThriftMetastoreClientFactory clientFactory)
+    public PooledStaticMetastoreLocator(StaticMetastoreConfig config, PooledThriftMetastoreClientFactory clientFactory)
     {
         this(config.getMetastoreUris(), config.getMetastoreUsername(), clientFactory);
     }
 
-    public StaticMetastoreLocator(List<URI> metastoreUris, String metastoreUsername, ThriftMetastoreClientFactory clientFactory)
+    public PooledStaticMetastoreLocator(List<URI> metastoreUris, String metastoreUsername, PooledThriftMetastoreClientFactory clientFactory)
     {
         requireNonNull(metastoreUris, "metastoreUris is null");
         checkArgument(!metastoreUris.isEmpty(), "metastoreUris must specify at least one URI");
@@ -71,7 +75,7 @@ public class StaticMetastoreLocator
         TException lastException = null;
         for (HostAndPort metastore : metastores) {
             try {
-                ThriftMetastoreClient client = clientFactory.create(metastore);
+                ThriftMetastoreClient client = clientFactory.create(metastore.getHost(), metastore.getPort());
                 if (!isNullOrEmpty(metastoreUsername)) {
                     client.setUGI(metastoreUsername);
                 }
@@ -81,17 +85,7 @@ public class StaticMetastoreLocator
                 lastException = e;
             }
         }
-        throw new TException("Failed connecting to Hive metastore: " + addresses, lastException);
-    }
 
-    public static URI checkMetastoreUri(URI uri)
-    {
-        requireNonNull(uri, "metastoreUri is null");
-        String scheme = uri.getScheme();
-        checkArgument(!isNullOrEmpty(scheme), "metastoreUri scheme is missing: %s", uri);
-        checkArgument(scheme.equals("thrift"), "metastoreUri scheme must be thrift: %s", uri);
-        checkArgument(uri.getHost() != null, "metastoreUri host is missing: %s", uri);
-        checkArgument(uri.getPort() != -1, "metastoreUri port is missing: %s", uri);
-        return uri;
+        throw new TException("Failed connecting to Hive metastore: " + addresses, lastException);
     }
 }

@@ -185,6 +185,12 @@
             <artifactId>javax.inject</artifactId>
         </dependency>
 
+        <!-- used by weride -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
+
         <!-- used by tests but also needed transitively -->
         <dependency>
             <groupId>io.airlift</groupId>
