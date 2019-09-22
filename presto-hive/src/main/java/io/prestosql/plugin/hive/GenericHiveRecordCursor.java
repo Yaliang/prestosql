@@ -59,6 +59,7 @@ import static io.prestosql.plugin.hive.HiveErrorCode.HIVE_CURSOR_ERROR;
 import static io.prestosql.plugin.hive.HiveUtil.closeWithSuppression;
 import static io.prestosql.plugin.hive.HiveUtil.getDeserializer;
 import static io.prestosql.plugin.hive.HiveUtil.getTableObjectInspector;
+import static io.prestosql.plugin.hive.HiveUtil.isEmptyGzipFile;
 import static io.prestosql.plugin.hive.HiveUtil.isStructuralType;
 import static io.prestosql.plugin.hive.util.SerDeUtils.getBlockObject;
 import static io.prestosql.spi.type.BigintType.BIGINT;
@@ -168,6 +169,11 @@ class GenericHiveRecordCursor<K, V extends Writable>
             StructField field = rowInspector.getStructFieldRef(column.getName());
             structFields[i] = field;
             fieldInspectors[i] = field.getFieldObjectInspector();
+        }
+
+        // close the empty split immediately
+        if (isEmptyGzipFile(path, totalBytes)) {
+            close();
         }
     }
 

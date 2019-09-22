@@ -979,4 +979,9 @@ public final class HiveUtil
     {
         return toHiveTypes(schema.getProperty(IOConstants.COLUMNS_TYPES, ""));
     }
+
+    public static boolean isEmptyGzipFile(Path path, long totalBytes)
+    {
+        return path.getName().endsWith("gz") && totalBytes == 0;
+    }
 }
