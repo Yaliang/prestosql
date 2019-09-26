@@ -25,7 +25,7 @@ public class PooledHiveMetastoreClientConfig
     private long transportEvictInterval = 10_000L;
     private int transportEvictNumTests = 3;
 
-    @Min(1)
+    @Min(0)
     public int getMaxTransport()
     {
         return maxTransport;
