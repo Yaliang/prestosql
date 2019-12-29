@@ -161,6 +161,8 @@ public class HiveConfig
     private long fileStatusCacheMaxSize = 1000 * 1000;
     private List<String> fileStatusCacheTables = ImmutableList.of();
 
+    private boolean skipUnexpectedEofExceptionEnabled = false;
+
     public int getMaxInitialSplits()
     {
         return maxInitialSplits;
@@ -1263,5 +1265,18 @@ public class HiveConfig
     public String getTemporaryStagingDirectoryPath()
     {
         return temporaryStagingDirectoryPath;
+    }
+
+    public boolean isSkipUnexpectedEofExceptionEnabled()
+    {
+        return skipUnexpectedEofExceptionEnabled;
+    }
+
+    @Config("hive.skip-unexpected-eof-exception")
+    @ConfigDescription("Should skip a skip a split for unexpected eof exception or throw the exception")
+    public HiveConfig setSkipUnexpectedEofExceptionEnabled(boolean skipUnexpectedEofExceptionEnabled)
+    {
+        this.skipUnexpectedEofExceptionEnabled = skipUnexpectedEofExceptionEnabled;
+        return this;
     }
 }

@@ -78,6 +78,7 @@ public final class HiveSessionProperties
     private static final String S3_SELECT_PUSHDOWN_ENABLED = "s3_select_pushdown_enabled";
     private static final String TEMPORARY_STAGING_DIRECTORY_ENABLED = "temporary_staging_directory_enabled";
     private static final String TEMPORARY_STAGING_DIRECTORY_PATH = "temporary_staging_directory_path";
+    private static final String SKIP_UNEXPECTED_EOF_EXCEPTION = "skip_unexpected_eof_exception";
 
     private final List<PropertyMetadata<?>> sessionProperties;
 
@@ -300,6 +301,11 @@ public final class HiveSessionProperties
                         hiveConfig.isS3SelectPushdownEnabled(),
                         false),
                 booleanProperty(
+                        SKIP_UNEXPECTED_EOF_EXCEPTION,
+                        "Should skip split if there is a unexpected eof exception",
+                        hiveConfig.isSkipUnexpectedEofExceptionEnabled(),
+                        false),
+                booleanProperty(
                         TEMPORARY_STAGING_DIRECTORY_ENABLED,
                         "Should use temporary staging directory for write operations",
                         hiveConfig.isTemporaryStagingDirectoryEnabled(),
@@ -515,5 +521,10 @@ public final class HiveSessionProperties
     public static String getTemporaryStagingDirectoryPath(ConnectorSession session)
     {
         return session.getProperty(TEMPORARY_STAGING_DIRECTORY_PATH, String.class);
+    }
+
+    public static boolean isSkipUnexpectedEofExceptionEnabled(ConnectorSession session)
+    {
+        return session.getProperty(SKIP_UNEXPECTED_EOF_EXCEPTION, Boolean.class);
     }
 }

@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import static io.prestosql.plugin.hive.HiveErrorCode.HIVE_FILESYSTEM_ERROR;
+import static io.prestosql.plugin.hive.HiveSessionProperties.isSkipUnexpectedEofExceptionEnabled;
 import static java.util.Objects.requireNonNull;
 
 public class GenericHiveRecordCursorProvider
@@ -79,7 +80,8 @@ public class GenericHiveRecordCursorProvider
                     schema,
                     columns,
                     hiveStorageTimeZone,
-                    typeManager));
+                    typeManager,
+                    isSkipUnexpectedEofExceptionEnabled(session)));
         });
     }
 

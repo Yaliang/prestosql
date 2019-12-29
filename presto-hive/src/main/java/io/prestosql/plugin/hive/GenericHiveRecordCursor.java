@@ -41,6 +41,7 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.joda.time.DateTimeZone;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigInteger;
@@ -115,6 +116,8 @@ class GenericHiveRecordCursor<K, V extends Writable>
     private Object rowData;
     private boolean closed;
 
+    private boolean isSkipUnexpectedEofExceptionEnabled;
+
     public GenericHiveRecordCursor(
             Configuration configuration,
             Path path,
@@ -123,7 +126,8 @@ class GenericHiveRecordCursor<K, V extends Writable>
             Properties splitSchema,
             List<HiveColumnHandle> columns,
             DateTimeZone hiveStorageTimeZone,
-            TypeManager typeManager)
+            TypeManager typeManager,
+            boolean isSkipUnexpectedEofExceptionEnabled)
     {
         requireNonNull(path, "path is null");
         requireNonNull(recordReader, "recordReader is null");
@@ -175,6 +179,8 @@ class GenericHiveRecordCursor<K, V extends Writable>
         if (isEmptyGzipFile(path, totalBytes)) {
             close();
         }
+
+        this.isSkipUnexpectedEofExceptionEnabled = isSkipUnexpectedEofExceptionEnabled;
     }
 
     @Override
@@ -229,6 +235,9 @@ class GenericHiveRecordCursor<K, V extends Writable>
             closeWithSuppression(this, e);
             if (e instanceof TextLineLengthLimitExceededException) {
                 throw new PrestoException(HIVE_BAD_DATA, "Line too long in text file: " + path, e);
+            }
+            if (this.isSkipUnexpectedEofExceptionEnabled && e instanceof EOFException) {
+                return false;
             }
             throw new PrestoException(HIVE_CURSOR_ERROR, e);
         }

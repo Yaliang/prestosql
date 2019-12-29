@@ -53,7 +53,7 @@ class S3SelectRecordCursor<K, V extends Writable>
             DateTimeZone hiveStorageTimeZone,
             TypeManager typeManager)
     {
-        super(configuration, path, recordReader, totalBytes, updateSplitSchema(splitSchema, columns), columns, hiveStorageTimeZone, typeManager);
+        super(configuration, path, recordReader, totalBytes, updateSplitSchema(splitSchema, columns), columns, hiveStorageTimeZone, typeManager, false);
     }
 
     // since s3select only returns the required column, not the whole columns
